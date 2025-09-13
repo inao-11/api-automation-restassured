@@ -38,10 +38,11 @@ public class APIBase {
     }
 
     public Response put(String endpoint, Object body, String token){
-        Response response = given().contentType(ContentType.JSON)
+
+        Response response = given().contentType("application/json").accept("application/json")
                 .cookie("token",token).body(body).when().log().all().put(baseURL+endpoint);
 
-        return response;
+        return  response;
     }
 
     public Response delete(String endpoint, String token){

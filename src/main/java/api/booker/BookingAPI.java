@@ -17,18 +17,18 @@ public class BookingAPI extends APIBase {
     private static final String AUTH_ENDPOINT = "/auth";
     private static final String BOOKING_ENDPOINT = "/booking";
 
-    private String token;
+    //private String token;
 
     public BookingAPI() {
         super(BASE_URL);
-        token = getToken();
+       // token = getToken();
     }
 
     public Response createBooking(Booking booking){
 
         Map<String, Object> bookingDates = new HashMap<>();
-        bookingDates.put("Checkin", booking.getCheckin());
-        bookingDates.put("Checkout", booking.getCheckout());
+        bookingDates.put("checkin", booking.getCheckin());
+        bookingDates.put("checkout", booking.getCheckout());
 
         Map<String,Object> body = new HashMap<>();
         body.put("firstname",booking.getFirstName());
@@ -56,10 +56,10 @@ public class BookingAPI extends APIBase {
 
     }
 
-    public Response updateBooking(Booking booking, int bookingId, String updatetoken){
+    public Response updateBooking(Booking booking, int bookingId, String updateToken){
         Map<String, Object> bookingDates = new HashMap<>();
-        bookingDates.put("Checkin", booking.getCheckin());
-        bookingDates.put("Checkout", booking.getCheckout());
+        bookingDates.put("checkin", booking.getCheckin());
+        bookingDates.put("checkout", booking.getCheckout());
 
         Map<String,Object> body = new HashMap<>();
         body.put("firstname",booking.getFirstName());
@@ -69,7 +69,7 @@ public class BookingAPI extends APIBase {
         body.put("bookingdates",bookingDates);
         body.put("additionalneeds", booking.getAdditionalneeds());
 
-        return put(BOOKING_ENDPOINT+"/"+bookingId, body, updatetoken);
+        return put(BOOKING_ENDPOINT+"/"+bookingId, body, updateToken);
     }
 
     public Response deleteBooking(int bookingId, String deletetoken){
