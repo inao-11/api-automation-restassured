@@ -21,7 +21,7 @@ public class BookingTest {
 
     @BeforeAll
     static void beforeAll() {
-        bookingAPI =  new BookingAPI();
+        bookingAPI = new BookingAPI();
     }
 
 //    @Disabled
@@ -43,28 +43,28 @@ public class BookingTest {
     @Order(1)
     void createBooking() {
 
-        Booking booking = new Booking("Teresa","Lopez",126,true,
-                "2025-10-10","2025-10-17","Lunch");
+        Booking booking = new Booking("Teresa", "Lopez", 126, true,
+                "2025-10-10", "2025-10-17", "Lunch");
 
         Response response = bookingAPI.createBooking(booking);
 
-        Assertions.assertEquals(200,response.statusCode(),"Failed: Status code was not 200.");
+        Assertions.assertEquals(200, response.statusCode(), "Failed: Status code was not 200.");
 
         bookingId = response.jsonPath().getInt("bookingid");
-        logger.info("bookingId: "+bookingId);
-        Assertions.assertTrue(bookingId>0,"Failed: Booking Id should be greater than 0.");
+        logger.info("bookingId: " + bookingId);
+        Assertions.assertTrue(bookingId > 0, "Failed: Booking Id should be greater than 0.");
 
         String firstName = response.jsonPath().getString("booking.firstname");
-        logger.info("firstName: "+firstName);
-        Assertions.assertEquals(booking.getFirstName(),firstName,"Failed: firstName is incorrect.");
+        logger.info("firstName: " + firstName);
+        Assertions.assertEquals(booking.getFirstName(), firstName, "Failed: firstName is incorrect.");
 
         String lastName = response.jsonPath().getString("booking.lastname");
-        logger.info("lastName: "+lastName);
-        Assertions.assertEquals(booking.getLastName(),lastName,"Failed: lastName is incorrect.");
+        logger.info("lastName: " + lastName);
+        Assertions.assertEquals(booking.getLastName(), lastName, "Failed: lastName is incorrect.");
 
         int totalPrice = response.jsonPath().getInt("booking.totalprice");
-        logger.info("totalPrice: "+totalPrice);
-        Assertions.assertEquals(booking.getTotalprice(),totalPrice,"Failed: Price is incorrect.");
+        logger.info("totalPrice: " + totalPrice);
+        Assertions.assertEquals(booking.getTotalprice(), totalPrice, "Failed: Price is incorrect.");
 
     }
 
@@ -75,11 +75,88 @@ public class BookingTest {
         Response response = bookingAPI.getBooking(bookingId);
 
         Assertions.assertNotNull(response);
-        Assertions.assertEquals(200,response.statusCode(),"Failed: Status code was not 200.");
+        Assertions.assertEquals(200, response.statusCode(), "Failed: Status code was not 200.");
 
         String firstName = response.jsonPath().getString("firstname");
-        logger.info("firstName: "+firstName);
-        Assertions.assertEquals("Teresa",firstName,"Failed: FirstName is not correct");
+        logger.info("firstName: " + firstName);
+        Assertions.assertEquals("Teresa", firstName, "Failed: FirstName is not correct");
 
+    }
+
+    @Test
+    @Order(3)
+    void updateBooking() {
+
+        Booking booking = new Booking("Teresa", "Martinez", 126, true,
+                "2025-10-10", "2025-10-17", "Lunch");
+
+        Response response = bookingAPI.updateBooking(booking, bookingId, bookingAPI.getToken());
+
+        // Assertions.assertEquals(200,response.statusCode(),"Failed: Status code was not 200.");
+
+        String updatedLastName = response.jsonPath().getString("lastname");
+        logger.info("updatedLastName: " + updatedLastName);
+        Assertions.assertEquals(booking.getLastName(), updatedLastName,
+                "Failed: Updated Lastname is not correct");
+    }
+
+    @Test
+    @Order(4)
+    void deleteBooking() {
+        String token = bookingAPI.getToken();
+        Response response = bookingAPI.deleteBooking(bookingId,token);
+        Assertions.assertEquals(201,response.statusCode());
+    }
+
+    @Test
+    @Order(5)
+    void verifyBookingWasDeleted() throws InterruptedException {
+
+        Thread.sleep(1000); //Waiting 1sec for the booking to be deleted before checking
+        Response response = bookingAPI.getBooking(bookingId);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(404,response.statusCode(),"Failed: Status code was not 404.");
+
+    }
+
+    @Test
+    void createAndUpdateBooking() {
+
+        Booking booking = new Booking("Teresa","Martinez",126,true,
+                "2025-10-10","2025-10-17","Lunch");
+
+        // Crear booking
+        Response create_response = bookingAPI.createBooking(booking);
+        logger.info("create_response: "+ create_response.asString());
+
+        Assertions.assertEquals(200, create_response.statusCode(),
+                "Failed to create booking: " + create_response.statusCode());
+
+        int newBookingId = create_response.jsonPath().getInt("bookingid");
+        logger.info("bookingId: " + newBookingId);
+
+        // Actualizar booking
+        booking.setLastName("Rojas");
+
+        String token = bookingAPI.getToken();
+        Response response = bookingAPI.updateBooking(booking, newBookingId,token);
+
+        logger.info("Update response status: " + response.statusCode());
+        String responseBody = response.asString();
+        logger.info("Update response body: " + responseBody);
+
+        Assertions.assertEquals(200, response.statusCode(), "Failed: Status code was not 200.");
+
+        try {
+            String updatedLastName = response.jsonPath().getString("lastname");
+            logger.info("updatedLastName: " + updatedLastName);
+            Assertions.assertEquals(booking.getLastName(), updatedLastName,
+                    "Failed: Updated Lastname is not correct");
+        } catch (Exception e) {
+            logger.error("Failed to parse JSON response: " + e.getMessage());
+            logger.error("Response body was: " + responseBody);
+            throw e;
+        }
     }
 }
